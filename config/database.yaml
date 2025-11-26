@@ -1,0 +1,236 @@
+# ========================================
+# Basic Database Configuration
+# ========================================
+database:
+  driver: postgres          # Database driver: postgres, mysql, sqlite
+  host: localhost
+  port: 5432
+  database: myapp
+  username: postgres
+  password: secret
+  schema: public           # PostgreSQL schema (optional, defaults to 'public')
+  
+  # Connection pool settings
+  max_open_conns: 100
+  max_idle_conns: 10
+  conn_max_lifetime: 3600  # seconds
+  
+  # Logging
+  log_level: warn          # silent, error, warn, info
+  slow_threshold: 200      # milliseconds
+
+
+# ========================================
+# Multi-Connection Configuration Example
+# ========================================
+# Uncomment to use multiple database connections
+# Useful for: multi-tenancy, microservices, analytics separation
+
+# database:
+#   # Primary connection
+#   driver: postgres
+#   host: localhost
+#   port: 5432
+#   database: myapp_primary
+#   username: postgres
+#   password: secret
+#   
+#   # Named connections
+#   connections:
+#     # Analytics database
+#     analytics:
+#       driver: postgres
+#       host: analytics.db.local
+#       port: 5432
+#       database: myapp_analytics
+#       username: analytics_user
+#       password: analytics_secret
+#       max_open_conns: 50
+#       max_idle_conns: 5
+#     
+#     # Logs database
+#     logs:
+#       driver: postgres
+#       host: logs.db.local
+#       port: 5432
+#       database: myapp_logs
+#       username: logs_user
+#       password: logs_secret
+#     
+#     # Tenant database (PostgreSQL schema-based)
+#     tenant_1:
+#       driver: postgres
+#       host: localhost
+#       port: 5432
+#       database: myapp
+#       username: postgres
+#       password: secret
+#       schema: tenant_1  # Each tenant in separate schema
+
+
+# ========================================
+# Master/Replica Configuration Example
+# ========================================
+# Uncomment to use read/write splitting with master/replica setup
+# Reads automatically route to replicas, writes to master
+
+# database:
+#   driver: postgres
+#   
+#   # Enable read/write splitting
+#   read_write_splitting: true
+#   auto_routing: true           # Automatic query routing (recommended)
+#   slave_strategy: weighted     # Load balancing: round-robin, random, weighted
+#   
+#   # Master connection (for writes)
+#   master:
+#     host: master.db.local
+#     port: 5432
+#     database: myapp
+#     username: postgres
+#     password: secret
+#     schema: public
+#     max_open_conns: 100
+#     max_idle_conns: 10
+#   
+#   # Replica connections (for reads)
+#   slaves:
+#     - host: replica1.db.local
+#       port: 5432
+#       database: myapp
+#       username: postgres
+#       password: secret
+#       schema: public
+#       weight: 2              # Higher weight = more traffic (for weighted strategy)
+#       max_open_conns: 50
+#       max_idle_conns: 5
+#     
+#     - host: replica2.db.local
+#       port: 5432
+#       database: myapp
+#       username: postgres
+#       password: secret
+#       schema: public
+#       weight: 1              # Lower weight = less traffic
+#       max_open_conns: 50
+#       max_idle_conns: 5
+
+
+# ========================================
+# Multi-Tenant with Schemas Example
+# ========================================
+# PostgreSQL schema-based multi-tenancy
+# Each tenant gets their own schema in the same database
+
+# database:
+#   driver: postgres
+#   host: localhost
+#   port: 5432
+#   database: myapp_saas
+#   username: postgres
+#   password: secret
+#   schema: public  # Default/shared schema
+#   
+#   connections:
+#     tenant_acme:
+#       driver: postgres
+#       host: localhost
+#       port: 5432
+#       database: myapp_saas
+#       username: postgres
+#       password: secret
+#       schema: tenant_acme
+#     
+#     tenant_widgets:
+#       driver: postgres
+#       host: localhost
+#       port: 5432
+#       database: myapp_saas
+#       username: postgres
+#       password: secret
+#       schema: tenant_widgets
+#     
+#     tenant_tech:
+#       driver: postgres
+#       host: localhost
+#       port: 5432
+#       database: myapp_saas
+#       username: postgres
+#       password: secret
+#       schema: tenant_tech
+
+
+# ========================================
+# Combined: Master/Replica + Multi-Connection
+# ========================================
+# Advanced setup with both read/write splitting and multiple connections
+
+# database:
+#   driver: postgres
+#   
+#   # Primary connection with read/write splitting
+#   read_write_splitting: true
+#   auto_routing: true
+#   slave_strategy: round-robin
+#   
+#   master:
+#     host: master.db.local
+#     port: 5432
+#     database: myapp
+#     username: postgres
+#     password: secret
+#   
+#   slaves:
+#     - host: replica1.db.local
+#       port: 5432
+#       database: myapp
+#       username: postgres
+#       password: secret
+#   
+#   # Additional named connections
+#   connections:
+#     analytics:
+#       driver: postgres
+#       host: analytics.db.local
+#       port: 5432
+#       database: analytics
+#       username: analytics_user
+#       password: analytics_secret
+#     
+#     cache:
+#       driver: postgres
+#       host: cache.db.local
+#       port: 5432
+#       database: cache
+#       username: cache_user
+#       password: cache_secret
+
+
+# ========================================
+# MySQL Example
+# ========================================
+# MySQL configuration (note: MySQL doesn't support schemas like PostgreSQL)
+
+# database:
+#   driver: mysql
+#   host: localhost
+#   port: 3306
+#   database: myapp
+#   username: root
+#   password: secret
+#   charset: utf8mb4
+#   parse_time: true
+#   timezone: UTC
+#   max_open_conns: 100
+#   max_idle_conns: 10
+
+
+# ========================================
+# SQLite Example
+# ========================================
+# SQLite configuration (for development/testing)
+
+# database:
+#   driver: sqlite
+#   file_path: ./storage/database.db
+#   max_open_conns: 1  # SQLite only supports 1 writer

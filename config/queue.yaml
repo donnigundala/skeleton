@@ -1,0 +1,9 @@
+queue:
+  driver: redis
+  connection: default
+  prefix: dg_queue
+  default_queue: default
+  max_attempts: 3
+  timeout: 60s
+  retry_delay: 5s
+  workers: 10

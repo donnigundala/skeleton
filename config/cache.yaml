@@ -1,0 +1,11 @@
+cache:
+  default_store: memory
+  prefix: dg_cache
+  stores:
+    memory:
+      driver: memory
+      prefix: mem_
+    redis:
+      driver: redis
+      connection: default
+      prefix: redis_
