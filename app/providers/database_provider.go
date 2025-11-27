@@ -28,7 +28,12 @@ func (p *DatabaseServiceProvider) Register(app contractFoundation.Application) e
 			panic(err)
 		}
 
-		manager, err := database.NewManager(dbConfig, loggerInstance)
+		logger, ok := loggerInstance.(database.Logger)
+		if !ok {
+			panic("logger does not implement database.Logger interface")
+		}
+
+		manager, err := database.NewManager(dbConfig, logger)
 		if err != nil {
 			panic(err)
 		}
