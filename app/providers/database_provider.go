@@ -1,13 +1,14 @@
 package providers
 
 import (
-	"github.com/donnigundala/dg-core/config"
 	contractFoundation "github.com/donnigundala/dg-core/contracts/foundation"
 	database "github.com/donnigundala/dg-database"
 )
 
 // DatabaseServiceProvider handles database initialization.
-type DatabaseServiceProvider struct{}
+type DatabaseServiceProvider struct {
+	Config database.Config `config:"database"`
+}
 
 // NewDatabaseServiceProvider creates a new database service provider.
 func NewDatabaseServiceProvider() *DatabaseServiceProvider {
@@ -17,10 +18,7 @@ func NewDatabaseServiceProvider() *DatabaseServiceProvider {
 // Register registers database services in the container.
 func (p *DatabaseServiceProvider) Register(app contractFoundation.Application) error {
 	app.Singleton("database", func() interface{} {
-		var dbConfig database.Config
-		if err := config.Inject("database", &dbConfig); err != nil {
-			panic(err)
-		}
+		// Config already injected by framework!
 
 		// Get logger from container
 		loggerInstance, err := app.Make("logger")
@@ -33,7 +31,7 @@ func (p *DatabaseServiceProvider) Register(app contractFoundation.Application) e
 			panic("logger does not implement database.Logger interface")
 		}
 
-		manager, err := database.NewManager(dbConfig, logger)
+		manager, err := database.NewManager(p.Config, logger)
 		if err != nil {
 			panic(err)
 		}
