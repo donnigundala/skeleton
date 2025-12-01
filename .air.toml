@@ -1,0 +1,46 @@
+# .air.toml
+# Config file for air: https://github.com/cosmtrek/air
+
+# The working directory for the project.
+root = "."
+# The directory for temporary files, including the compiled binary.
+tmp_dir = "tmp"
+
+[build]
+# The command to build the application.
+# This compiles the main entry point into the tmp directory.
+cmd = "go build -o ./tmp/main ./cmd/app/main.go"
+
+# The name of the binary to run.
+bin = "tmp/main"
+
+# File extensions to watch for changes.
+include_ext = ["go", "yaml", "toml"]
+
+# Directories to exclude from watching.
+exclude_dir = ["tmp", "vendor", "docs"]
+
+# It's not necessary to trigger a build on each file change if it's a static file.
+exclude_unchanged = true
+
+# Send an interrupt signal to the running process before killing it.
+# This is crucial for allowing graceful shutdown to work.
+send_interrupt = true
+
+# Delay in milliseconds after sending the interrupt signal before killing the process.
+kill_delay = 1000 # ms
+
+[log]
+# Show log timestamps.
+time = true
+
+[color]
+# Customize colors for different parts of the output.
+main = "magenta"
+watcher = "cyan"
+build = "yellow"
+runner = "green"
+
+[misc]
+# Delete the tmp directory on exit.
+clean_on_exit = true

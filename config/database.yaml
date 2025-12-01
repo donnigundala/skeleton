@@ -5,9 +5,9 @@ database:
   driver: postgres          # Database driver: postgres, mysql, sqlite
   host: localhost
   port: 5432
-  database: myapp
+  database: mdl_notification_v3
   username: postgres
-  password: secret
+  password: ""
   schema: public           # PostgreSQL schema (optional, defaults to 'public')
   
   # Connection pool settings
