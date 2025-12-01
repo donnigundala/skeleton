@@ -1,48 +1,45 @@
 package providers
 
 import (
+	"github.com/donnigundala/dg-core/config"
 	contractFoundation "github.com/donnigundala/dg-core/contracts/foundation"
 	database "github.com/donnigundala/dg-database"
 )
 
 // DatabaseServiceProvider handles database initialization.
-type DatabaseServiceProvider struct {
-	Config database.Config `config:"database"`
-}
+type DatabaseServiceProvider struct{}
 
 // NewDatabaseServiceProvider creates a new database service provider.
 func NewDatabaseServiceProvider() *DatabaseServiceProvider {
 	return &DatabaseServiceProvider{}
 }
 
-// Register registers database services in the container.
+// Register only binds the key, but does not resolve or connect.
+// The actual instance will be created in the Boot phase.
 func (p *DatabaseServiceProvider) Register(app contractFoundation.Application) error {
 	app.Singleton("database", func() interface{} {
-		// Config already injected by framework!
+		// This resolver will be called during the Boot phase,
+		// or when "database" is requested for the first time after booting.
+		var dbConfig database.Config
+		if err := config.Inject("database", &dbConfig); err != nil {
+			panic("failed to load database configuration: " + err.Error())
+		}
 
-		// Get logger from container
-		loggerInstance, err := app.Make("logger")
+		loggerInstance, _ := app.Make("logger")
+		logger := loggerInstance.(database.Logger)
+
+		manager, err := database.NewManager(dbConfig, logger)
 		if err != nil {
-			panic(err)
+			panic("failed to create and connect to database: " + err.Error())
 		}
-
-		logger, ok := loggerInstance.(database.Logger)
-		if !ok {
-			panic("logger does not implement database.Logger interface")
-		}
-
-		manager, err := database.NewManager(p.Config, logger)
-		if err != nil {
-			panic(err)
-		}
-
 		return manager
 	})
 	return nil
 }
 
-// Boot boots the service provider.
+// Boot does NOT force connection. Database will connect on first use (lazy loading).
+// This prevents blocking startup if database is unavailable.
 func (p *DatabaseServiceProvider) Boot(app contractFoundation.Application) error {
-	// Nothing to boot
+	// No eager connection - database manager will connect when first resolved
 	return nil
 }
