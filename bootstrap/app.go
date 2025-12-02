@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"time"
 
 	"skeleton-v2/app/http/routes"
 	"skeleton-v2/app/providers"
@@ -219,7 +220,7 @@ func (a *Application) setupRouter() http.Router {
 func (a *Application) registerShutdownHooks() {
 	a.foundation.RegisterShutdownHook(func() {
 		a.logger.Info("Shutting down HTTP server...")
-		ctx, cancel := context.WithTimeout(context.Background(), 30)
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 		if err := a.server.Shutdown(ctx); err != nil {
 			a.logger.Error("HTTP server shutdown error", "error", err)
