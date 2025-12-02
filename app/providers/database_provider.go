@@ -1,6 +1,8 @@
 package providers
 
 import (
+	"log/slog"
+
 	"github.com/donnigundala/dg-core/config"
 	contractFoundation "github.com/donnigundala/dg-core/contracts/foundation"
 	database "github.com/donnigundala/dg-database"
@@ -42,4 +44,16 @@ func (p *DatabaseServiceProvider) Register(app contractFoundation.Application) e
 func (p *DatabaseServiceProvider) Boot(app contractFoundation.Application) error {
 	// No eager connection - database manager will connect when first resolved
 	return nil
+}
+
+// Shutdown gracefully closes database connections.
+func (p *DatabaseServiceProvider) Shutdown(app contractFoundation.Application) error {
+	dbInstance, err := app.Make("database")
+	if err != nil {
+		return nil // Database not initialized, nothing to shutdown
+	}
+
+	slog.Info("Shutting down database manager...")
+	manager := dbInstance.(*database.Manager)
+	return manager.Close()
 }
