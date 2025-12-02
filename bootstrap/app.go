@@ -18,7 +18,7 @@ import (
 	"github.com/donnigundala/dg-core/http/health"
 	"github.com/donnigundala/dg-core/logging"
 	"github.com/donnigundala/dg-core/validation"
-	"github.com/donnigundala/dg-queue"
+	queue "github.com/donnigundala/dg-queue"
 )
 
 // AppConfig represents the application configuration.
@@ -152,11 +152,17 @@ func (a *Application) registerProviders() error {
 		return errors.Wrap(err, "failed to load queue configuration")
 	}
 
+	// Register providers in dependency order
 	providersToRegister := []foundation.ServiceProvider{
+		// Infrastructure layer
 		providers.NewCacheServiceProvider(cacheConfig),
 		providers.NewQueueServiceProvider(queueConfig),
 		providers.NewDatabaseServiceProvider(),
-		providers.NewAppServiceProvider(),
+
+		// Application layer (order matters: Repositories → Services → Controllers)
+		providers.NewRepositoryServiceProvider(),
+		providers.NewServiceLayerProvider(),
+		providers.NewControllerServiceProvider(),
 	}
 
 	for _, provider := range providersToRegister {

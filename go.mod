@@ -4,10 +4,11 @@ go 1.25.0
 
 require (
 	github.com/donnigundala/dg-cache v1.3.1
-	github.com/donnigundala/dg-core v1.1.3
+	github.com/donnigundala/dg-core v1.3.0
 	github.com/donnigundala/dg-database v1.2.1
 	github.com/donnigundala/dg-queue v1.0.1
 	github.com/golang-migrate/migrate/v4 v4.19.0
+	github.com/redis/go-redis/v9 v9.17.0
 	gorm.io/gorm v1.31.1
 )
 
@@ -15,9 +16,10 @@ require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/bytedance/sonic v1.11.6 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
+	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect
-	github.com/donnigundala/dgcore v1.1.2 // indirect
+	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
