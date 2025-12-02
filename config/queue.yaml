@@ -7,3 +7,7 @@ queue:
   timeout: 60s
   retry_delay: 5s
   workers: 10
+  options:
+    addr: "localhost:6379"
+    password: ""
+    db: 0
