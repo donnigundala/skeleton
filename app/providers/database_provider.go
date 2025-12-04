@@ -1,59 +1,19 @@
 package providers
 
 import (
-	"log/slog"
-
-	"github.com/donnigundala/dg-core/config"
-	contractFoundation "github.com/donnigundala/dg-core/contracts/foundation"
 	database "github.com/donnigundala/dg-database"
 )
 
-// DatabaseServiceProvider handles database initialization.
-type DatabaseServiceProvider struct{}
-
-// NewDatabaseServiceProvider creates a new database service provider.
-func NewDatabaseServiceProvider() *DatabaseServiceProvider {
-	return &DatabaseServiceProvider{}
-}
-
-// Register only binds the key, but does not resolve or connect.
-// The actual instance will be created in the Boot phase.
-func (p *DatabaseServiceProvider) Register(app contractFoundation.Application) error {
-	app.Singleton("database", func() interface{} {
-		// This resolver will be called during the Boot phase,
-		// or when "database" is requested for the first time after booting.
-		var dbConfig database.Config
-		if err := config.Inject("database", &dbConfig); err != nil {
-			panic("failed to load database configuration: " + err.Error())
-		}
-
-		loggerInstance, _ := app.Make("logger")
-		logger := loggerInstance.(database.Logger)
-
-		manager, err := database.NewManager(dbConfig, logger)
-		if err != nil {
-			panic("failed to create and connect to database: " + err.Error())
-		}
-		return manager
-	})
-	return nil
-}
-
-// Boot does NOT force connection. Database will connect on first use (lazy loading).
-// This prevents blocking startup if database is unavailable.
-func (p *DatabaseServiceProvider) Boot(app contractFoundation.Application) error {
-	// No eager connection - database manager will connect when first resolved
-	return nil
-}
-
-// Shutdown gracefully closes database connections.
-func (p *DatabaseServiceProvider) Shutdown(app contractFoundation.Application) error {
-	dbInstance, err := app.Make("database")
-	if err != nil {
-		return nil // Database not initialized, nothing to shutdown
-	}
-
-	slog.Info("Shutting down database manager...")
-	manager := dbInstance.(*database.Manager)
-	return manager.Close()
+// NewDatabaseServiceProvider creates a database provider using the new plugin pattern.
+// This is the recommended approach for most applications.
+//
+// The provider will automatically:
+// - Resolve and integrate with the logger (if available)
+// - Test database connection on boot
+// - Handle graceful shutdown
+//
+// For advanced customization, you can still create a custom provider
+// using database.NewManager() directly.
+func NewDatabaseServiceProvider() *database.DatabaseServiceProvider {
+	return &database.DatabaseServiceProvider{}
 }

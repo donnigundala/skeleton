@@ -36,16 +36,28 @@ type Application struct {
 	logger     *logging.Logger
 	config     AppConfig
 	server     *coreHTTP.HTTPServer
+	mode       string // "web" or "scheduler"
 }
 
-// NewApplication creates a new application instance but does not boot it.
+// NewApplication creates a new application instance (Web mode).
 func NewApplication() *Application {
 	basePath, _ := os.Getwd()
 	app := foundation.New(basePath)
 
-	// The rest of the initialization will be handled by the Boot method.
 	return &Application{
 		foundation: app,
+		mode:       "web",
+	}
+}
+
+// NewSchedulerApplication creates a new application instance (Scheduler mode).
+func NewSchedulerApplication() *Application {
+	basePath, _ := os.Getwd()
+	app := foundation.New(basePath)
+
+	return &Application{
+		foundation: app,
+		mode:       "scheduler",
 	}
 }
 
@@ -72,6 +84,7 @@ func (a *Application) Boot() error {
 		"name", a.config.Name,
 		"env", a.config.Env,
 		"debug", a.config.Debug,
+		"mode", a.mode,
 	)
 
 	// Register Service Providers
@@ -80,12 +93,18 @@ func (a *Application) Boot() error {
 	}
 
 	// Boot the core application, which in turn boots all registered providers.
+	a.logger.Info("Booting service providers...")
 	if err := a.foundation.Boot(); err != nil {
 		return errors.Wrap(err, "failed to boot service providers")
 	}
+	a.logger.Info("Service providers booted successfully")
 
-	// Setup HTTP Server (now that providers are booted)
-	a.server = a.setupHTTPServer()
+	// Setup HTTP Server (only in web mode)
+	if a.mode == "web" {
+		a.logger.Info("Setting up HTTP server...")
+		a.server = a.setupHTTPServer()
+		a.logger.Info("HTTP server configured")
+	}
 
 	// Register Shutdown Hooks
 	a.registerShutdownHooks()
@@ -94,15 +113,26 @@ func (a *Application) Boot() error {
 	return nil
 }
 
-// Start starts the HTTP server and waits for a shutdown signal.
+// Start starts the application.
 func (a *Application) Start() error {
 	a.logger.Info("Application started. Press Ctrl+C to shutdown.")
 
-	go func() {
-		if err := a.server.Start(); err != nil {
-			a.logger.Error("HTTP server error", "error", err)
-		}
-	}()
+	// Start all runnable services (Scheduler, Queue, etc.)
+	// This uses the new lifecycle management system
+	if err := a.foundation.StartServices(); err != nil {
+		a.logger.Error("Failed to start services", "error", err)
+		return err
+	}
+
+	if a.mode == "web" {
+		go func() {
+			if err := a.server.Start(); err != nil {
+				a.logger.Error("HTTP server error", "error", err)
+			}
+		}()
+	} else {
+		a.logger.Info("Application running in foreground (press Ctrl+C to stop)...")
+	}
 
 	a.foundation.WaitForShutdown()
 
@@ -158,12 +188,18 @@ func (a *Application) registerProviders() error {
 		// Infrastructure layer
 		providers.NewCacheServiceProvider(cacheConfig),
 		providers.NewQueueServiceProvider(queueConfig),
-		providers.NewDatabaseServiceProvider(),
+		// providers.NewSchedulerServiceProvider(),
+		// providers.NewDatabaseServiceProvider(),
+		providers.FirebaseProvider(), // Firebase integration
 
 		// Application layer (order matters: Repositories → Services → Controllers)
 		providers.NewRepositoryServiceProvider(),
 		providers.NewServiceLayerProvider(),
-		providers.NewControllerServiceProvider(),
+	}
+
+	// Only register controllers in web mode
+	if a.mode == "web" {
+		providersToRegister = append(providersToRegister, providers.NewControllerServiceProvider())
 	}
 
 	for _, provider := range providersToRegister {
@@ -219,15 +255,18 @@ func (a *Application) setupRouter() http.Router {
 
 func (a *Application) registerShutdownHooks() {
 	a.foundation.RegisterShutdownHook(func() {
-		a.logger.Info("Shutting down HTTP server...")
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-		defer cancel()
-		if err := a.server.Shutdown(ctx); err != nil {
-			a.logger.Error("HTTP server shutdown error", "error", err)
+		if a.server != nil {
+			a.logger.Info("Shutting down HTTP server...")
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
+			if err := a.server.Shutdown(ctx); err != nil {
+				a.logger.Error("HTTP server shutdown error", "error", err)
+			}
 		}
 	})
 
 	a.foundation.RegisterShutdownHook(func() {
 		a.logger.Info("Executing cleanup: Closing resources...")
+		a.foundation.StopServices()
 	})
 }

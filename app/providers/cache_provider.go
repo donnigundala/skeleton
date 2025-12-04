@@ -1,55 +1,26 @@
 package providers
 
 import (
-	"log/slog"
-
 	cache "github.com/donnigundala/dg-cache"
 	cacheMemory "github.com/donnigundala/dg-cache/drivers/memory"
-	contractFoundation "github.com/donnigundala/dg-core/contracts/foundation"
+	cacheRedis "github.com/donnigundala/dg-cache/drivers/redis"
 )
 
-// CacheServiceProvider handles cache initialization.
-type CacheServiceProvider struct {
-	config cache.Config
-}
-
-// NewCacheServiceProvider creates a new cache service provider.
-func NewCacheServiceProvider(config cache.Config) *CacheServiceProvider {
-	return &CacheServiceProvider{
-		config: config,
+// NewCacheServiceProvider creates a cache provider using the new plugin pattern.
+// This is the recommended approach for most applications.
+//
+// The provider will automatically:
+// - Register common drivers (memory, redis)
+// - Handle graceful shutdown
+//
+// For advanced customization, you can still create a custom provider
+// using cache.NewManager() and cache.RegisterDriver() directly.
+func NewCacheServiceProvider(config cache.Config) *cache.CacheServiceProvider {
+	return &cache.CacheServiceProvider{
+		Config: config,
+		DriverFactories: map[string]cache.DriverFactory{
+			"memory": cacheMemory.NewDriver,
+			"redis":  cacheRedis.NewDriver,
+		},
 	}
-}
-
-// Register registers cache services in the container.
-func (p *CacheServiceProvider) Register(app contractFoundation.Application) error {
-	app.Singleton("cache", func() interface{} {
-		manager, err := cache.NewManager(p.config)
-		if err != nil {
-			panic(err)
-		}
-
-		// Register drivers
-		manager.RegisterDriver("memory", cacheMemory.NewDriver)
-
-		return manager
-	})
-	return nil
-}
-
-// Boot boots the service provider.
-func (p *CacheServiceProvider) Boot(app contractFoundation.Application) error {
-	// Nothing to boot
-	return nil
-}
-
-// Shutdown gracefully closes cache connections.
-func (p *CacheServiceProvider) Shutdown(app contractFoundation.Application) error {
-	cacheInstance, err := app.Make("cache")
-	if err != nil {
-		return nil // Cache not initialized, nothing to shutdown
-	}
-
-	slog.Info("Shutting down cache manager...")
-	manager := cacheInstance.(*cache.Manager)
-	return manager.Close()
 }

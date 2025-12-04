@@ -1,0 +1,14 @@
+# Firebase Configuration
+# Use either credentials_file OR credentials_json (not both)
+
+firebase:
+  # Option 1: Path to service account JSON file
+  # credentials_file: "path/to/service-account.json"
+  
+  # Option 2: Raw JSON content (useful for environment variables)
+  # credentials_json: "${FIREBASE_CREDENTIALS}"
+  
+  # For local development, use credentials_file
+  # For production/deployment, use credentials_json with env var
+  credentials_file: ""
+  credentials_json: ""
