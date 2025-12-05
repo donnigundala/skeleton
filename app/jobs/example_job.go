@@ -2,28 +2,37 @@ package jobs
 
 import (
 	"fmt"
+	"log/slog"
 	"time"
 
-	queue "github.com/donnigundala/dg-queue"
+	"skeleton-v2/app/support/scheduler"
 )
 
-// ExampleJobName is the name of the example job
-const ExampleJobName = "example_job"
+// ExampleScheduledJob is a simple scheduled job that runs periodically
+type ExampleScheduledJob struct {
+	scheduler.BaseJob
+	logger *slog.Logger
+}
 
-// ExampleJobHandler handles the example job
-func ExampleJobHandler(job *queue.Job) error {
-	fmt.Printf("[Job] Processing example job: %s\n", job.ID)
-
-	// Simulate work
-	time.Sleep(1 * time.Second)
-
-	// Access payload
-	if msg, ok := job.Payload.(string); ok {
-		fmt.Printf("[Job] Payload: %s\n", msg)
-	} else {
-		fmt.Printf("[Job] Payload: %v\n", job.Payload)
+// NewExampleScheduledJob creates a new example scheduled job
+func NewExampleScheduledJob(logger *slog.Logger) *ExampleScheduledJob {
+	return &ExampleScheduledJob{
+		BaseJob: scheduler.NewBaseJob("example-job", "* * * * *", true),
+		logger:  logger,
 	}
+}
 
-	fmt.Printf("[Job] Completed example job: %s\n", job.ID)
+// Handle executes the job logic
+func (j *ExampleScheduledJob) Handle() error {
+	j.logger.Info("Example scheduled job executed",
+		"job", j.Name(),
+		"time", time.Now().Format(time.RFC3339),
+		"message", "This job runs every minute!")
 	return nil
+}
+
+// init registers this job automatically
+func init() {
+	// Jobs will be registered via the provider
+	fmt.Println("Example scheduled job loaded")
 }

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"skeleton-v2/app/http/routes"
+	"skeleton-v2/app/jobs"
 	"skeleton-v2/app/providers"
 
 	cache "github.com/donnigundala/dg-cache"
@@ -124,6 +125,12 @@ func (a *Application) Start() error {
 		return err
 	}
 
+	// Register scheduled jobs
+	if err := a.registerScheduledJobs(); err != nil {
+		a.logger.Error("Failed to register scheduled jobs", "error", err)
+		return err
+	}
+
 	if a.mode == "web" {
 		go func() {
 			if err := a.server.Start(); err != nil {
@@ -188,8 +195,8 @@ func (a *Application) registerProviders() error {
 		// Infrastructure layer
 		providers.NewCacheServiceProvider(cacheConfig),
 		providers.NewQueueServiceProvider(queueConfig),
-		// providers.NewSchedulerServiceProvider(),
-		// providers.NewDatabaseServiceProvider(),
+		providers.NewSchedulerServiceProvider(), // Queue must be registered before Scheduler
+		providers.NewDatabaseServiceProvider(),
 		providers.FirebaseProvider(), // Firebase integration
 
 		// Application layer (order matters: Repositories → Services → Controllers)
@@ -269,4 +276,29 @@ func (a *Application) registerShutdownHooks() {
 		a.logger.Info("Executing cleanup: Closing resources...")
 		a.foundation.StopServices()
 	})
+}
+
+func (a *Application) registerScheduledJobs() error {
+	// Get scheduler instance
+	schedulerInstance, err := a.foundation.Make("scheduler")
+	if err != nil {
+		return fmt.Errorf("failed to get scheduler: %w", err)
+	}
+
+	scheduler, ok := schedulerInstance.(interface {
+		Schedule(cronExpr, name string, handler func() error) error
+	})
+	if !ok {
+		return fmt.Errorf("scheduler does not implement Schedule method")
+	}
+
+	// Load all jobs from the registry
+	registry := jobs.LoadAll(a.foundation.Log())
+
+	// Schedule all enabled jobs
+	if err := registry.ScheduleAll(scheduler); err != nil {
+		return err
+	}
+
+	return nil
 }
