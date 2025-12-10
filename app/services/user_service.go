@@ -108,3 +108,13 @@ func (s *userService) Delete(ctx context.Context, id uint) error {
 
 	return nil
 }
+
+// MustResolveUserService resolves the user service from the container.
+// It panics if the resolution fails, which is acceptable during app boot.
+func MustResolveUserService(app foundation.Application) UserService {
+	svc, err := app.Make("userService")
+	if err != nil {
+		panic("failed to resolve user service: " + err.Error())
+	}
+	return svc.(UserService)
+}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"skeleton-v2/app/models"
 
+	"github.com/donnigundala/dg-core/contracts/foundation"
 	"gorm.io/gorm"
 )
 
@@ -69,4 +70,14 @@ func (r *userRepository) Update(ctx context.Context, user *models.User) error {
 // Delete deletes a user by ID.
 func (r *userRepository) Delete(ctx context.Context, id uint) error {
 	return r.db.WithContext(ctx).Delete(&models.User{}, id).Error
+}
+
+// MustResolveUserRepository resolves the user repository from the container.
+// It panics if the resolution fails, which is acceptable during app boot.
+func MustResolveUserRepository(app foundation.Application) UserRepository {
+	repo, err := app.Make("userRepository")
+	if err != nil {
+		panic("failed to resolve user repository: " + err.Error())
+	}
+	return repo.(UserRepository)
 }

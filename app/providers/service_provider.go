@@ -1,11 +1,9 @@
 package providers
 
 import (
-	"skeleton-v2/app/repositories"
 	"skeleton-v2/app/services"
 
 	"github.com/donnigundala/dg-core/contracts/foundation"
-	queue "github.com/donnigundala/dg-queue"
 )
 
 // ServiceLayerProvider registers all application services.
@@ -18,20 +16,8 @@ func NewServiceLayerProvider() *ServiceLayerProvider {
 
 // Register binds services into the container.
 func (p *ServiceLayerProvider) Register(app foundation.Application) error {
-	// Register User Service
-	app.Singleton("userService", func() interface{} {
-		// Resolve dependencies using type-safe helpers
-		userRepo := repositories.MustResolveUserRepository(app)
-		queueManager := queue.MustResolve(app)
-
-		return services.NewUserService(
-			userRepo,
-			app,
-			queueManager,
-		)
-	})
-
-	return nil
+	// Auto-discover and register all services
+	return services.LoadAll(app)
 }
 
 // Boot boots the service provider.

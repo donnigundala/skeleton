@@ -27,12 +27,13 @@ package repositories
 import (
 	"context"
 	"skeleton-v2/app/models"
+	
+	"github.com/donnigundala/dg-core/contracts/foundation"
 	"gorm.io/gorm"
 )
 
 type ProductRepository interface {
 	Create(ctx context.Context, product *models.Product) error
-	GetByID(ctx context.Context, id uint) (*models.Product, error)
 	// ... other methods
 }
 
@@ -48,7 +49,14 @@ func (r *productRepository) Create(ctx context.Context, product *models.Product)
 	return r.db.WithContext(ctx).Create(product).Error
 }
 
-// ... implement other methods
+// MustResolveProductRepository resolves the product repository from the container.
+func MustResolveProductRepository(app foundation.Application) ProductRepository {
+	repo, err := app.Make("productRepository")
+	if err != nil {
+		panic("failed to resolve product repository: " + err.Error())
+	}
+	return repo.(ProductRepository)
+}
 ```
 
 ### 2. Register in Loader
@@ -57,23 +65,19 @@ Add one line to `app/repositories/loader.go`:
 
 ```go
 func LoadAll(app foundation.Application) error {
+    // Resolve DB once
+	dbManager := database.MustResolve(app)
+	db := dbManager.DB()
+
 	registry := repository.NewRegistry()
 	
 	// Existing repositories
 	registry.Register(repository.NewBaseRepository("userRepository", func(app foundation.Application) (interface{}, error) {
-		db, err := getDB(app)
-		if err != nil {
-			return nil, err
-		}
 		return NewUserRepository(db), nil
 	}))
 	
 	// Add your new repository here
 	registry.Register(repository.NewBaseRepository("productRepository", func(app foundation.Application) (interface{}, error) {
-		db, err := getDB(app)
-		if err != nil {
-			return nil, err
-		}
 		return NewProductRepository(db), nil
 	}))
 	
@@ -81,37 +85,16 @@ func LoadAll(app foundation.Application) error {
 }
 ```
 
-**Note**: The `getDB()` helper function eliminates repetitive database resolution boilerplate.
-
-That's it! No need to modify `app/providers/repository_provider.go`.
-
 ## Using Repositories in Services
 
-Repositories are resolved from the container the same way as before:
+Repositories are injected into services using the `MustResolveX` helper:
 
 ```go
-// app/services/user_service.go
-package services
-
-import (
-	"skeleton-v2/app/repositories"
-	"github.com/donnigundala/dg-core/contracts/foundation"
-)
-
-type UserService struct {
-	userRepo repositories.UserRepository
-}
-
-func NewUserService(app foundation.Application) (*UserService, error) {
-	// Resolve from container
-	repoInstance, err := app.Make("userRepository")
-	if err != nil {
-		return nil, err
-	}
-	
-	return &UserService{
-		userRepo: repoInstance.(repositories.UserRepository),
-	}, nil
+// app/services/product_service.go
+func NewProductService(app foundation.Application) ProductService {
+    return &productService{
+        repo: repositories.MustResolveProductRepository(app),
+    }
 }
 ```
 
