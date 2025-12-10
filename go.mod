@@ -125,3 +125,12 @@ require (
 	gorm.io/driver/postgres v1.6.0 // indirect
 	gorm.io/driver/sqlite v1.6.0 // indirect
 )
+
+replace (
+	github.com/donnigundala/dg-cache => ../dg-cache
+	github.com/donnigundala/dg-core => ../dg-core
+	github.com/donnigundala/dg-database => ../dg-database
+	github.com/donnigundala/dg-framework/dg-firebase => ../dg-firebase
+	github.com/donnigundala/dg-queue => ../dg-queue
+	github.com/donnigundala/dg-scheduler => ../dg-scheduler
+)

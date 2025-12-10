@@ -26,11 +26,11 @@ type UserService interface {
 type userService struct {
 	repo   repositories.UserRepository
 	inject *cache.Injectable
-	queue  *queue.Manager
+	queue  queue.Queue
 }
 
 // NewUserService creates a new user service.
-func NewUserService(repo repositories.UserRepository, app foundation.Application, queueManager *queue.Manager) UserService {
+func NewUserService(repo repositories.UserRepository, app foundation.Application, queueManager queue.Queue) UserService {
 	return &userService{
 		repo:   repo,
 		inject: cache.NewInjectable(app),
