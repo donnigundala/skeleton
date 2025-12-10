@@ -3,9 +3,9 @@ module skeleton-v2
 go 1.25.0
 
 require (
-	github.com/donnigundala/dg-cache v1.4.0
+	github.com/donnigundala/dg-cache v1.6.0
 	github.com/donnigundala/dg-core v1.3.0
-	github.com/donnigundala/dg-database v1.4.0
+	github.com/donnigundala/dg-database v1.5.0
 	github.com/donnigundala/dg-framework/dg-firebase v1.0.0
 	github.com/donnigundala/dg-queue v1.4.0
 	github.com/donnigundala/dg-scheduler v1.1.0
@@ -124,13 +124,4 @@ require (
 	gorm.io/driver/mysql v1.6.0 // indirect
 	gorm.io/driver/postgres v1.6.0 // indirect
 	gorm.io/driver/sqlite v1.6.0 // indirect
-)
-
-replace (
-	github.com/donnigundala/dg-cache => ../dg-cache
-	github.com/donnigundala/dg-core => ../dg-core
-	github.com/donnigundala/dg-database => ../dg-database
-	github.com/donnigundala/dg-framework/dg-firebase => ../dg-firebase
-	github.com/donnigundala/dg-queue => ../dg-queue
-	github.com/donnigundala/dg-scheduler => ../dg-scheduler
 )

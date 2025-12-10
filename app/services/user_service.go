@@ -9,7 +9,8 @@ import (
 	"skeleton-v2/app/repositories"
 
 	cache "github.com/donnigundala/dg-cache"
-	"github.com/donnigundala/dg-queue"
+	"github.com/donnigundala/dg-core/contracts/foundation"
+	queue "github.com/donnigundala/dg-queue"
 )
 
 // UserService defines the interface for user business logic.
@@ -23,17 +24,17 @@ type UserService interface {
 
 // userService implements UserService.
 type userService struct {
-	repo  repositories.UserRepository
-	cache *cache.Manager
-	queue *queue.Manager
+	repo   repositories.UserRepository
+	inject *cache.Injectable
+	queue  *queue.Manager
 }
 
 // NewUserService creates a new user service.
-func NewUserService(repo repositories.UserRepository, cacheManager *cache.Manager, queueManager *queue.Manager) UserService {
+func NewUserService(repo repositories.UserRepository, app foundation.Application, queueManager *queue.Manager) UserService {
 	return &userService{
-		repo:  repo,
-		cache: cacheManager,
-		queue: queueManager,
+		repo:   repo,
+		inject: cache.NewInjectable(app),
+		queue:  queueManager,
 	}
 }
 
@@ -58,7 +59,7 @@ func (s *userService) GetByID(ctx context.Context, id uint) (*models.User, error
 
 	// Try cache first
 	var cachedUser models.User
-	err := s.cache.GetAs(ctx, cacheKey, &cachedUser)
+	err := s.inject.Cache().GetAs(ctx, cacheKey, &cachedUser)
 	if err == nil {
 		return &cachedUser, nil
 	}
@@ -70,7 +71,7 @@ func (s *userService) GetByID(ctx context.Context, id uint) (*models.User, error
 	}
 
 	// Store in cache (5 minutes TTL)
-	_ = s.cache.Put(ctx, cacheKey, user, 5*time.Minute)
+	_ = s.inject.Cache().Put(ctx, cacheKey, user, 5*time.Minute)
 
 	return user, nil
 }
@@ -89,7 +90,7 @@ func (s *userService) Update(ctx context.Context, user *models.User) error {
 
 	// Invalidate cache
 	cacheKey := fmt.Sprintf("user:%d", user.ID)
-	_ = s.cache.Forget(ctx, cacheKey)
+	_ = s.inject.Cache().Forget(ctx, cacheKey)
 
 	return nil
 }
@@ -103,7 +104,7 @@ func (s *userService) Delete(ctx context.Context, id uint) error {
 
 	// Invalidate cache
 	cacheKey := fmt.Sprintf("user:%d", id)
-	_ = s.cache.Forget(ctx, cacheKey)
+	_ = s.inject.Cache().Forget(ctx, cacheKey)
 
 	return nil
 }
