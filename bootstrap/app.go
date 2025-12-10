@@ -21,6 +21,7 @@ import (
 	"github.com/donnigundala/dg-core/logging"
 	"github.com/donnigundala/dg-core/validation"
 	queue "github.com/donnigundala/dg-queue"
+	scheduler "github.com/donnigundala/dg-scheduler"
 )
 
 // AppConfig represents the application configuration.
@@ -279,17 +280,11 @@ func (a *Application) registerShutdownHooks() {
 }
 
 func (a *Application) registerScheduledJobs() error {
-	// Get scheduler instance
-	schedulerInstance, err := a.foundation.Make("scheduler")
+	// Get scheduler instance using type-safe helper
+	// We use Resolve here since scheduler is optional/might fail
+	scheduler, err := scheduler.Resolve(a.foundation)
 	if err != nil {
-		return fmt.Errorf("failed to get scheduler: %w", err)
-	}
-
-	scheduler, ok := schedulerInstance.(interface {
-		Schedule(cronExpr, name string, handler func() error) error
-	})
-	if !ok {
-		return fmt.Errorf("scheduler does not implement Schedule method")
+		return fmt.Errorf("failed to resolve scheduler: %w", err)
 	}
 
 	// Load all jobs from the registry

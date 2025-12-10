@@ -5,10 +5,10 @@ go 1.25.0
 require (
 	github.com/donnigundala/dg-cache v1.6.0
 	github.com/donnigundala/dg-core v1.3.0
-	github.com/donnigundala/dg-database v1.5.0
-	github.com/donnigundala/dg-framework/dg-firebase v1.0.0
-	github.com/donnigundala/dg-queue v1.4.0
-	github.com/donnigundala/dg-scheduler v1.1.0
+	github.com/donnigundala/dg-database v1.5.1
+	github.com/donnigundala/dg-framework/dg-firebase v1.1.0
+	github.com/donnigundala/dg-queue v1.6.0
+	github.com/donnigundala/dg-scheduler v1.2.0
 	github.com/golang-migrate/migrate/v4 v4.19.0
 	github.com/redis/go-redis/v9 v9.17.0
 	gorm.io/gorm v1.31.1

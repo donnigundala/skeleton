@@ -20,20 +20,14 @@ func NewServiceLayerProvider() *ServiceLayerProvider {
 func (p *ServiceLayerProvider) Register(app foundation.Application) error {
 	// Register User Service
 	app.Singleton("userService", func() interface{} {
-		userRepoInstance, err := app.Make("userRepository")
-		if err != nil {
-			panic("failed to resolve user repository: " + err.Error())
-		}
-
-		queueManagerInstance, err := app.Make("queue")
-		if err != nil {
-			panic("failed to resolve queue manager: " + err.Error())
-		}
+		// Resolve dependencies using type-safe helpers
+		userRepo := repositories.MustResolveUserRepository(app)
+		queueManager := queue.MustResolve(app)
 
 		return services.NewUserService(
-			userRepoInstance.(repositories.UserRepository),
+			userRepo,
 			app,
-			queueManagerInstance.(*queue.Manager),
+			queueManager,
 		)
 	})
 
