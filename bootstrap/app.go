@@ -254,10 +254,10 @@ func (a *Application) setupRouter() *gin.Engine {
 	healthManager := health.NewManager()
 	healthManager.AddCheck(health.AlwaysHealthy("app"))
 
-	// Convert standard handlers to Gin handlers
-	router.GET("/health/live", gin.WrapF(health.LivenessHandler()))
-	router.GET("/health/ready", gin.WrapF(healthManager.ReadinessHandler()))
-	router.GET("/health", gin.WrapF(healthManager.HealthHandler()))
+	// Register health check routes (Gin native)
+	router.GET("/health/live", health.LivenessHandler())
+	router.GET("/health/ready", healthManager.ReadinessHandler())
+	router.GET("/health", healthManager.HealthHandler())
 
 	// Apply global middleware (Gin native)
 	router.Use(
