@@ -261,11 +261,12 @@ func (a *Application) setupRouter() *gin.Engine {
 
 	// Apply global middleware (Gin native)
 	router.Use(
-		coreHTTP.LoggerWithDefault(),
-		coreHTTP.RecoveryWithDefault(),
-		coreHTTP.CORSWithDefault(),
-		coreHTTP.SecurityHeadersWithDefault(),
-		coreHTTP.BodySizeLimit(10*1024*1024), // 10MB
+		coreHTTP.RequestIDWithDefault(),       // Request tracing (must be first)
+		coreHTTP.LoggerWithDefault(),          // Logging with request ID
+		coreHTTP.RecoveryWithDefault(),        // Panic recovery
+		coreHTTP.CORSWithDefault(),            // CORS headers
+		coreHTTP.SecurityHeadersWithDefault(), // Security headers
+		coreHTTP.BodySizeLimit(10*1024*1024),  // 10MB limit
 	)
 
 	// Register application routes
