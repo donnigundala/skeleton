@@ -4,7 +4,7 @@ go 1.25.0
 
 require (
 	github.com/donnigundala/dg-cache v1.6.2
-	github.com/donnigundala/dg-core v1.5.1
+	github.com/donnigundala/dg-core v1.5.1 // Local replace uses v2.1.0 code
 	github.com/donnigundala/dg-database v1.5.1
 	github.com/donnigundala/dg-framework/dg-firebase v1.1.0
 	github.com/donnigundala/dg-queue v1.6.0
