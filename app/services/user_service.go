@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"skeleton-v2/app/models"
-	"skeleton-v2/app/repositories"
+	"skeleton/app/models"
+	"skeleton/app/repositories"
 
 	cache "github.com/donnigundala/dg-cache"
 	"github.com/donnigundala/dg-core/contracts/foundation"

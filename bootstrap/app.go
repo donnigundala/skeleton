@@ -7,9 +7,9 @@ import (
 	"os"
 	"time"
 
-	"skeleton-v2/app/http/routes"
-	"skeleton-v2/app/jobs"
-	"skeleton-v2/app/providers"
+	"skeleton/app/http/routes"
+	"skeleton/app/jobs"
+	"skeleton/app/providers"
 
 	cache "github.com/donnigundala/dg-cache"
 	"github.com/donnigundala/dg-core/config"

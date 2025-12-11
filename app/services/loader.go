@@ -1,8 +1,8 @@
 package services
 
 import (
-	"skeleton-v2/app/repositories"
-	"skeleton-v2/app/support/service"
+	"skeleton/app/repositories"
+	"skeleton/app/support/service"
 
 	"github.com/donnigundala/dg-core/contracts/foundation"
 	queue "github.com/donnigundala/dg-queue"

@@ -2,7 +2,7 @@ package repositories
 
 import (
 	"context"
-	"skeleton-v2/app/models"
+	"skeleton/app/models"
 
 	"github.com/donnigundala/dg-core/contracts/foundation"
 	"gorm.io/gorm"

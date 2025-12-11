@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"skeleton-v2/app/support/repository"
+	"skeleton/app/support/repository"
 
 	"github.com/donnigundala/dg-core/contracts/foundation"
 	database "github.com/donnigundala/dg-database"

@@ -1,7 +1,7 @@
 package providers
 
 import (
-	"skeleton-v2/app/services"
+	"skeleton/app/services"
 
 	"github.com/donnigundala/dg-core/contracts/foundation"
 )

@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"skeleton-v2/app/http/controllers"
+	"skeleton/app/http/controllers"
 
 	"github.com/donnigundala/dg-core/contracts/foundation"
 	"github.com/gin-gonic/gin"

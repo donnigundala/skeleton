@@ -3,7 +3,7 @@ package jobs
 import (
 	"log/slog"
 
-	"skeleton-v2/app/support/scheduler"
+	"skeleton/app/support/scheduler"
 )
 
 // LoadAll loads all available scheduled jobs

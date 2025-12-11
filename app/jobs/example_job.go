@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"time"
 
-	"skeleton-v2/app/support/scheduler"
+	"skeleton/app/support/scheduler"
 )
 
 // ExampleScheduledJob is a simple scheduled job that runs periodically

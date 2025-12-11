@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"skeleton-v2/app/http/dto"
-	"skeleton-v2/app/models"
-	"skeleton-v2/app/services"
+	"skeleton/app/http/dto"
+	"skeleton/app/models"
+	"skeleton/app/services"
 
 	"github.com/donnigundala/dg-core/validation"
 	"github.com/gin-gonic/gin"

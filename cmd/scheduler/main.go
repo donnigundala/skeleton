@@ -2,7 +2,7 @@ package main
 
 import (
 	"log"
-	"skeleton-v2/bootstrap"
+	"skeleton/bootstrap"
 )
 
 func main() {

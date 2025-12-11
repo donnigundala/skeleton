@@ -1,8 +1,8 @@
 package providers
 
 import (
-	"skeleton-v2/app/http/controllers"
-	"skeleton-v2/app/services"
+	"skeleton/app/http/controllers"
+	"skeleton/app/services"
 
 	"github.com/donnigundala/dg-core/contracts/foundation"
 	"github.com/donnigundala/dg-core/validation"

@@ -1,4 +1,4 @@
-module skeleton-v2
+module skeleton
 
 go 1.25.0
 
