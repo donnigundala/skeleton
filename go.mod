@@ -4,11 +4,12 @@ go 1.25.0
 
 require (
 	github.com/donnigundala/dg-cache v1.6.2
-	github.com/donnigundala/dg-core v1.4.0
+	github.com/donnigundala/dg-core v1.5.1
 	github.com/donnigundala/dg-database v1.5.1
 	github.com/donnigundala/dg-framework/dg-firebase v1.1.0
 	github.com/donnigundala/dg-queue v1.6.0
 	github.com/donnigundala/dg-scheduler v1.2.0
+	github.com/gin-gonic/gin v1.10.0
 	github.com/golang-migrate/migrate/v4 v4.19.0
 	github.com/redis/go-redis/v9 v9.17.0
 	gorm.io/gorm v1.31.1
@@ -44,7 +45,6 @@ require (
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
-	github.com/gin-gonic/gin v1.10.0 // indirect
 	github.com/go-jose/go-jose/v4 v4.1.2 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect

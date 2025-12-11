@@ -13,7 +13,6 @@ import (
 
 	cache "github.com/donnigundala/dg-cache"
 	"github.com/donnigundala/dg-core/config"
-	"github.com/donnigundala/dg-core/contracts/http"
 	"github.com/donnigundala/dg-core/errors"
 	"github.com/donnigundala/dg-core/foundation"
 	coreHTTP "github.com/donnigundala/dg-core/http"
@@ -22,6 +21,7 @@ import (
 	"github.com/donnigundala/dg-core/validation"
 	queue "github.com/donnigundala/dg-queue"
 	scheduler "github.com/donnigundala/dg-scheduler"
+	"github.com/gin-gonic/gin"
 )
 
 // AppConfig represents the application configuration.
@@ -29,7 +29,6 @@ type AppConfig struct {
 	Name  string `mapstructure:"name" validate:"required,min=3"`
 	Env   string `mapstructure:"env" validate:"required,oneof=development staging production"`
 	Debug bool   `mapstructure:"debug"`
-	Port  int    `mapstructure:"port" validate:"required,gte=1,lte=65535"`
 }
 
 // Application represents the bootstrapped application.
@@ -222,36 +221,51 @@ func (a *Application) registerProviders() error {
 
 func (a *Application) setupHTTPServer() *coreHTTP.HTTPServer {
 	router := a.setupRouter()
-	kernel := coreHTTP.NewKernel(a.foundation, router)
-	addr := fmt.Sprintf(":%d", a.config.Port)
-	server := coreHTTP.NewHTTPServer(coreHTTP.Config{Addr: addr}, kernel)
 
-	a.logger.Info("HTTP server configured", "addr", addr)
+	// Create Kernel with Gin Engine
+	kernel := coreHTTP.NewKernel(a.foundation, router)
+
+	// Load server configuration from server.yaml
+	var serverConfig coreHTTP.Config
+	if err := config.Inject("server", &serverConfig); err != nil {
+		a.logger.Warn("Failed to load server config, using defaults", "error", err)
+		serverConfig = coreHTTP.Config{
+			Addr:         ":8080",
+			ReadTimeout:  10 * time.Second,
+			WriteTimeout: 10 * time.Second,
+			IdleTimeout:  60 * time.Second,
+		}
+	}
+
+	server := coreHTTP.NewHTTPServer(serverConfig, kernel, coreHTTP.WithHTTPLogger(a.logger.Underlying()))
+
+	a.logger.Info("HTTP server configured", "addr", serverConfig.Addr)
 	return server
 }
 
-func (a *Application) setupRouter() http.Router {
-	a.foundation.Singleton("router", func() interface{} {
-		return coreHTTP.NewRouter()
-	})
+func (a *Application) setupRouter() *gin.Engine {
+	// Create Gin Engine using dg-core factory
+	router := coreHTTP.NewRouter()
 
-	routerInstance, _ := a.foundation.Make("router")
-	router := routerInstance.(http.Router)
+	// Register as instance (no longer using generic interface)
+	a.foundation.Instance("router", router)
 
 	// Setup health checks
 	healthManager := health.NewManager()
 	healthManager.AddCheck(health.AlwaysHealthy("app"))
-	router.Get("/health/live", health.LivenessHandler())
-	router.Get("/health/ready", healthManager.ReadinessHandler())
-	router.Get("/health", healthManager.HealthHandler())
 
-	// Apply global middleware
+	// Convert standard handlers to Gin handlers
+	router.GET("/health/live", gin.WrapF(health.LivenessHandler()))
+	router.GET("/health/ready", gin.WrapF(healthManager.ReadinessHandler()))
+	router.GET("/health", gin.WrapF(healthManager.HealthHandler()))
+
+	// Apply global middleware (Gin native)
 	router.Use(
 		coreHTTP.LoggerWithDefault(),
 		coreHTTP.RecoveryWithDefault(),
 		coreHTTP.CORSWithDefault(),
 		coreHTTP.SecurityHeadersWithDefault(),
-		coreHTTP.BodySizeLimit(10*1024*1024),
+		coreHTTP.BodySizeLimit(10*1024*1024), // 10MB
 	)
 
 	// Register application routes

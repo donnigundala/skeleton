@@ -8,9 +8,8 @@ import (
 	"skeleton-v2/app/models"
 	"skeleton-v2/app/services"
 
-	"github.com/donnigundala/dg-core/http/request"
-	"github.com/donnigundala/dg-core/http/response"
 	"github.com/donnigundala/dg-core/validation"
+	"github.com/gin-gonic/gin"
 )
 
 // UserController handles user HTTP requests.
@@ -28,16 +27,22 @@ func NewUserController(service services.UserService, validator *validation.Valid
 }
 
 // Create handles POST /api/v1/users
-func (c *UserController) Create(w http.ResponseWriter, r *http.Request) {
+func (c *UserController) Create(ctx *gin.Context) {
 	var req dto.CreateUserRequest
 
-	// Parse and validate JSON
-	if err := request.JSONWithValidation(r, &req, c.validator); err != nil {
+	// Bind JSON
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Validate struct
+	if err := c.validator.ValidateStruct(ctx.Request.Context(), &req); err != nil {
 		if valErr, ok := err.(*validation.Error); ok {
-			response.ValidationError(w, valErr.Errors)
+			ctx.JSON(http.StatusUnprocessableEntity, gin.H{"errors": valErr.Errors})
 			return
 		}
-		response.BadRequest(w, err.Error())
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -47,40 +52,40 @@ func (c *UserController) Create(w http.ResponseWriter, r *http.Request) {
 		Email: req.Email,
 	}
 
-	if err := c.service.Create(r.Context(), user); err != nil {
-		response.Error(w, err, http.StatusInternalServerError)
+	if err := c.service.Create(ctx.Request.Context(), user); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	// Return created user
-	response.Created(w, c.toResponse(user), "")
+	ctx.JSON(http.StatusCreated, c.toResponse(user))
 }
 
 // Get handles GET /api/v1/users/:id
-func (c *UserController) Get(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseUint(request.Param(r, "id"), 10, 32)
+func (c *UserController) Get(ctx *gin.Context) {
+	id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
 	if err != nil {
-		response.BadRequest(w, "Invalid user ID")
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 		return
 	}
 
-	user, err := c.service.GetByID(r.Context(), uint(id))
+	user, err := c.service.GetByID(ctx.Request.Context(), uint(id))
 	if err != nil {
-		response.NotFound(w, "User not found")
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
 	}
 
-	response.Success(w, c.toResponse(user), "User retrieved successfully")
+	ctx.JSON(http.StatusOK, c.toResponse(user))
 }
 
 // List handles GET /api/v1/users
-func (c *UserController) List(w http.ResponseWriter, r *http.Request) {
-	page := request.QueryInt(r, "page", 1)
-	perPage := request.QueryInt(r, "per_page", 20)
+func (c *UserController) List(ctx *gin.Context) {
+	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
+	perPage, _ := strconv.Atoi(ctx.DefaultQuery("per_page", "20"))
 
-	users, total, err := c.service.GetAll(r.Context(), page, perPage)
+	users, total, err := c.service.GetAll(ctx.Request.Context(), page, perPage)
 	if err != nil {
-		response.Error(w, err, http.StatusInternalServerError)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -91,32 +96,43 @@ func (c *UserController) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Return paginated response
-	meta := response.NewPaginationMeta(page, perPage, int(total))
-	response.Paginated(w, userResponses, meta)
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": userResponses,
+		"meta": gin.H{
+			"current_page": page,
+			"per_page":     perPage,
+			"total":        total,
+		},
+	})
 }
 
 // Update handles PUT /api/v1/users/:id
-func (c *UserController) Update(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseUint(request.Param(r, "id"), 10, 32)
+func (c *UserController) Update(ctx *gin.Context) {
+	id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
 	if err != nil {
-		response.BadRequest(w, "Invalid user ID")
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 		return
 	}
 
 	var req dto.UpdateUserRequest
-	if err := request.JSONWithValidation(r, &req, c.validator); err != nil {
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := c.validator.ValidateStruct(ctx.Request.Context(), &req); err != nil {
 		if valErr, ok := err.(*validation.Error); ok {
-			response.ValidationError(w, valErr.Errors)
+			ctx.JSON(http.StatusUnprocessableEntity, gin.H{"errors": valErr.Errors})
 			return
 		}
-		response.BadRequest(w, err.Error())
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	// Get existing user
-	user, err := c.service.GetByID(r.Context(), uint(id))
+	user, err := c.service.GetByID(ctx.Request.Context(), uint(id))
 	if err != nil {
-		response.NotFound(w, "User not found")
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
 	}
 
@@ -128,28 +144,28 @@ func (c *UserController) Update(w http.ResponseWriter, r *http.Request) {
 		user.Email = req.Email
 	}
 
-	if err := c.service.Update(r.Context(), user); err != nil {
-		response.Error(w, err, http.StatusInternalServerError)
+	if err := c.service.Update(ctx.Request.Context(), user); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	response.Success(w, c.toResponse(user), "User updated successfully")
+	ctx.JSON(http.StatusOK, c.toResponse(user))
 }
 
 // Delete handles DELETE /api/v1/users/:id
-func (c *UserController) Delete(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseUint(request.Param(r, "id"), 10, 32)
+func (c *UserController) Delete(ctx *gin.Context) {
+	id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
 	if err != nil {
-		response.BadRequest(w, "Invalid user ID")
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 		return
 	}
 
-	if err := c.service.Delete(r.Context(), uint(id)); err != nil {
-		response.Error(w, err, http.StatusInternalServerError)
+	if err := c.service.Delete(ctx.Request.Context(), uint(id)); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	response.Success(w, nil, "User deleted successfully")
+	ctx.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
 }
 
 // toResponse converts a model to a response DTO.

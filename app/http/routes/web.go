@@ -1,67 +1,20 @@
 package routes
 
 import (
-	"fmt"
-	"net/http"
-	"time"
-
 	"skeleton-v2/app/http/controllers"
 
-	cache "github.com/donnigundala/dg-cache"
 	"github.com/donnigundala/dg-core/contracts/foundation"
-	contractHTTP "github.com/donnigundala/dg-core/contracts/http"
-	"github.com/donnigundala/dg-core/http/response"
+	"github.com/gin-gonic/gin"
 )
 
 // Register registers the web routes.
-func Register(app foundation.Application, router contractHTTP.Router) {
+func Register(app foundation.Application, router *gin.Engine) {
 	// Welcome route
-	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		response.Success(w, map[string]string{
+	router.GET("/", func(c *gin.Context) {
+		c.JSON(200, gin.H{
 			"message": "Welcome to Skeleton V2!",
 			"version": "2.0.0",
-		}, "DG Framework Skeleton Application")
-	})
-
-	// Cache test endpoint
-	router.Get("/test/cache", func(w http.ResponseWriter, r *http.Request) {
-		cacheManagerInstance, err := app.Make("cache")
-		if err != nil {
-			response.Error(w, err, http.StatusInternalServerError)
-			return
-		}
-		cacheManager := cacheManagerInstance.(*cache.Manager)
-
-		ctx := r.Context()
-		testKey := "test_key"
-		testValue := fmt.Sprintf("cached_at_%d", time.Now().Unix())
-
-		// 1. Put
-		if err := cacheManager.Put(ctx, testKey, testValue, 60*time.Second); err != nil {
-			response.Error(w, err, http.StatusInternalServerError)
-			return
-		}
-
-		// 2. Get
-		retrieved, err := cacheManager.Get(ctx, testKey)
-		if err != nil {
-			response.Error(w, err, http.StatusInternalServerError)
-			return
-		}
-
-		// 3. Has
-		exists, err := cacheManager.Has(ctx, testKey)
-		if err != nil {
-			response.Error(w, err, http.StatusInternalServerError)
-			return
-		}
-
-		response.JSON(w, http.StatusOK, map[string]interface{}{
-			"cache_working": true,
-			"put":           testValue,
-			"get":           retrieved,
-			"has":           exists,
-			"driver":        "memory",
+			"info":    "DG Framework Skeleton Application",
 		})
 	})
 
@@ -75,31 +28,30 @@ func Register(app foundation.Application, router contractHTTP.Router) {
 	}
 
 	// API group
-	router.Group(contractHTTP.GroupAttributes{
-		Prefix: "/api/v1",
-	}, func(r contractHTTP.Router) {
-		r.Get("/status", func(w http.ResponseWriter, r *http.Request) {
-			response.JSON(w, http.StatusOK, map[string]interface{}{
+	api := router.Group("/api/v1")
+	{
+		api.GET("/status", func(c *gin.Context) {
+			c.JSON(200, gin.H{
 				"status": "online",
 				"app":    "skeleton-v2",
 			})
 		})
 
-		// User routes - controllers resolved on each request
-		r.Post("/users", func(w http.ResponseWriter, r *http.Request) {
-			getUserController().Create(w, r)
+		// User routes
+		api.POST("/users", func(c *gin.Context) {
+			getUserController().Create(c)
 		})
-		r.Get("/users", func(w http.ResponseWriter, r *http.Request) {
-			getUserController().List(w, r)
+		api.GET("/users", func(c *gin.Context) {
+			getUserController().List(c)
 		})
-		r.Get("/users/:id", func(w http.ResponseWriter, r *http.Request) {
-			getUserController().Get(w, r)
+		api.GET("/users/:id", func(c *gin.Context) {
+			getUserController().Get(c)
 		})
-		r.Put("/users/:id", func(w http.ResponseWriter, r *http.Request) {
-			getUserController().Update(w, r)
+		api.PUT("/users/:id", func(c *gin.Context) {
+			getUserController().Update(c)
 		})
-		r.Delete("/users/:id", func(w http.ResponseWriter, r *http.Request) {
-			getUserController().Delete(w, r)
+		api.DELETE("/users/:id", func(c *gin.Context) {
+			getUserController().Delete(c)
 		})
-	})
+	}
 }

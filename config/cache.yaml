@@ -1,5 +1,5 @@
 cache:
-  default_store: memory
+  default_store: redis
   prefix: dg_cache
   stores:
     memory:
