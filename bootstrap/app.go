@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"skeleton/app/http/routes"
+	appHTTP "skeleton/app/http"
 	"skeleton/app/jobs"
 	"skeleton/app/providers"
 
@@ -16,7 +16,6 @@ import (
 	"github.com/donnigundala/dg-core/errors"
 	"github.com/donnigundala/dg-core/foundation"
 	coreHTTP "github.com/donnigundala/dg-core/http"
-	"github.com/donnigundala/dg-core/http/health"
 	"github.com/donnigundala/dg-core/logging"
 	"github.com/donnigundala/dg-core/validation"
 	filesystem "github.com/donnigundala/dg-filesystem"
@@ -24,7 +23,6 @@ import (
 	// "github.com/donnigundala/dg-filesystem/drivers/s3" // Uncomment to enable S3 driver
 	queue "github.com/donnigundala/dg-queue"
 	scheduler "github.com/donnigundala/dg-scheduler"
-	"github.com/gin-gonic/gin"
 )
 
 // AppConfig represents the application configuration.
@@ -224,7 +222,7 @@ func (a *Application) registerProviders() error {
 }
 
 func (a *Application) setupHTTPServer() *coreHTTP.HTTPServer {
-	router := a.setupRouter()
+	router := appHTTP.NewKernel(a.foundation)
 
 	// Create Kernel with Gin Engine
 	kernel := coreHTTP.NewKernel(a.foundation, router)
@@ -245,39 +243,6 @@ func (a *Application) setupHTTPServer() *coreHTTP.HTTPServer {
 
 	a.logger.Info("HTTP server configured", "addr", serverConfig.Addr)
 	return server
-}
-
-func (a *Application) setupRouter() *gin.Engine {
-	// Create Gin Engine using dg-core factory
-	router := coreHTTP.NewRouter()
-
-	// Register as instance (no longer using generic interface)
-	a.foundation.Instance("router", router)
-
-	// Setup health checks
-	healthManager := health.NewManager()
-	healthManager.AddCheck(health.AlwaysHealthy("app"))
-
-	// Register health check routes (Gin native)
-	router.GET("/health/live", health.LivenessHandler())
-	router.GET("/health/ready", healthManager.ReadinessHandler())
-	router.GET("/health", healthManager.HealthHandler())
-
-	// Apply global middleware (Gin native)
-	router.Use(
-		coreHTTP.RequestIDWithDefault(),       // Request tracing (must be first)
-		coreHTTP.LoggerWithDefault(),          // Logging with request ID
-		coreHTTP.RecoveryWithDefault(),        // Panic recovery
-		coreHTTP.CORSWithDefault(),            // CORS headers
-		coreHTTP.SecurityHeadersWithDefault(), // Security headers
-		coreHTTP.BodySizeLimit(10*1024*1024),  // 10MB limit
-	)
-
-	// Register application routes
-	routes.Register(a.foundation, router)
-
-	a.logger.Debug("Routes registered successfully")
-	return router
 }
 
 func (a *Application) registerShutdownHooks() {
