@@ -198,8 +198,8 @@ func (a *Application) registerProviders() error {
 		providers.NewQueueServiceProvider(queueConfig),
 		providers.NewSchedulerServiceProvider(), // Queue must be registered before Scheduler
 		providers.NewDatabaseServiceProvider(),
-		&filesystem.FilesystemServiceProvider{}, // Filesystem
-		providers.FirebaseProvider(),            // Firebase integration
+		filesystem.NewFilesystemServiceProvider(), // Filesystem
+		providers.FirebaseProvider(),              // Firebase integration
 
 		// Application layer (order matters: Repositories → Services → Controllers)
 		providers.NewRepositoryServiceProvider(),
