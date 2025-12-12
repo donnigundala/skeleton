@@ -6,7 +6,7 @@ require (
 	github.com/donnigundala/dg-cache v1.6.2
 	github.com/donnigundala/dg-core v1.6.0
 	github.com/donnigundala/dg-database v1.5.1
-	github.com/donnigundala/dg-filesystem v1.0.1
+	github.com/donnigundala/dg-filesystem v1.0.2
 	github.com/donnigundala/dg-firebase v1.1.0
 	github.com/donnigundala/dg-queue v1.6.0
 	github.com/donnigundala/dg-scheduler v1.2.0

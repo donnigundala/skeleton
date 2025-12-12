@@ -84,10 +84,10 @@ github.com/donnigundala/dg-core v1.6.0 h1:zHTSzG221raxXq3KFrOfotvzdF1ASpFTLg8U5W
 github.com/donnigundala/dg-core v1.6.0/go.mod h1:9491eYGT1grNCY+1TTE3g6YSacIJ3NZpJJNlsrY08a0=
 github.com/donnigundala/dg-database v1.5.1 h1:K69MNHUCf7oksb5NwtLJ6mo3aff83SIPVlfZY1ZUwz8=
 github.com/donnigundala/dg-database v1.5.1/go.mod h1:CuglC0/JoqPCsm0pVuae7spYEv7H4fBEIg4KJDXenPI=
-github.com/donnigundala/dg-filesystem v1.0.0 h1:hV6WI8jWWMkhqZ4tNG6dz7uz3Z0XfgIOI8aH9dOtA9k=
-github.com/donnigundala/dg-filesystem v1.0.0/go.mod h1:IyfN7aB6Bmvb51zv1cJ1MpeDHZmPFgNUw8imD5+icsc=
 github.com/donnigundala/dg-filesystem v1.0.1 h1:EAJFSEmYtehpdi2kJ5AG5CLG4Ko7Rlgumj9JnmCsa78=
 github.com/donnigundala/dg-filesystem v1.0.1/go.mod h1:IyfN7aB6Bmvb51zv1cJ1MpeDHZmPFgNUw8imD5+icsc=
+github.com/donnigundala/dg-filesystem v1.0.2 h1:i4TBhulmPFeg9On+fsvOO4UKJ/NKr2gzkLWHmqMUAgY=
+github.com/donnigundala/dg-filesystem v1.0.2/go.mod h1:IyfN7aB6Bmvb51zv1cJ1MpeDHZmPFgNUw8imD5+icsc=
 github.com/donnigundala/dg-firebase v1.1.0 h1:bXdvx9KhWFmLgIpC4GUnjgj/xf998Z+wl6oSLbfU21I=
 github.com/donnigundala/dg-firebase v1.1.0/go.mod h1:KvvOp5qQ0RTSmCZhFyE09VrLWXmslG4FF3nDElFcUTw=
 github.com/donnigundala/dg-queue v1.6.0 h1:00hjDwafFp5QwMlgJ7UYVpWSHaGoTkCC3HtPvjqENuY=
