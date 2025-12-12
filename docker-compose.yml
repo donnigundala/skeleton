@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # Database
+  db:
+    image: postgres:15-alpine
+    container_name: skeleton_db
+    environment:
+      POSTGRES_DB: skeleton_v2_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Redis (Cache & Queue)
+  redis:
+    image: redis:7-alpine
+    container_name: skeleton_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    command: ["redis-server", "--appendonly", "yes"]
+
+  # MinIO (Optional: Local S3)
+  minio:
+    image: minio/minio
+    container_name: skeleton_minio
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Create Buckets for MinIO
+  createbuckets:
+    image: minio/mc
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc config host add myminio http://minio:9000 minioadmin minioadmin;
+      /usr/bin/mc mb myminio/local-bucket;
+      /usr/bin/mc policy set public myminio/local-bucket;
+      exit 0;
+      "
+
+volumes:
+  db_data:
+  redis_data:
+  minio_data:
