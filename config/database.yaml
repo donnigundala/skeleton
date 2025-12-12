@@ -5,7 +5,7 @@ db:
   driver: postgres          # Database driver: postgres, mysql, sqlite
   host: localhost
   port: 5432
-  database: mdl_notification_v3
+  name: mdl_notification_v3
   username: postgres
   password: ""
   schema: public           # PostgreSQL schema (optional, defaults to 'public')

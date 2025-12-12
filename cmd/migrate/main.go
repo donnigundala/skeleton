@@ -31,24 +31,24 @@ func main() {
 
 	// Build database configuration
 	port := 5432 // default
-	if p := config.Get("database.port"); p != nil {
+	if p := config.Get("db.port"); p != nil {
 		if portInt, ok := p.(int); ok {
 			port = portInt
 		}
 	}
 
 	dbConfig := dgdb.DefaultConfig().
-		WithDriver(config.GetString("database.driver")).
-		WithHost(config.GetString("database.host")).
+		WithDriver(config.GetString("db.driver")).
+		WithHost(config.GetString("db.host")).
 		WithPort(port).
-		WithDatabase(config.GetString("database.database")).
+		WithDatabase(config.GetString("db.name")).
 		WithCredentials(
-			config.GetString("database.username"),
-			config.GetString("database.password"),
+			config.GetString("db.username"),
+			config.GetString("db.password"),
 		)
 
 	// Add schema if specified (PostgreSQL)
-	if schema := config.GetString("database.schema"); schema != "" {
+	if schema := config.GetString("db.schema"); schema != "" {
 		dbConfig = dbConfig.WithSchema(schema)
 	}
 
@@ -83,7 +83,7 @@ func main() {
 	// Create migrator
 	m, err := migrate.NewWithDatabaseInstance(
 		"file://database/migrations",
-		dbConfig.Database,
+		dbConfig.Name,
 		driver,
 	)
 	if err != nil {
