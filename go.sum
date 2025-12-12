@@ -84,6 +84,8 @@ github.com/donnigundala/dg-core v1.6.0 h1:zHTSzG221raxXq3KFrOfotvzdF1ASpFTLg8U5W
 github.com/donnigundala/dg-core v1.6.0/go.mod h1:9491eYGT1grNCY+1TTE3g6YSacIJ3NZpJJNlsrY08a0=
 github.com/donnigundala/dg-database v1.5.1 h1:K69MNHUCf7oksb5NwtLJ6mo3aff83SIPVlfZY1ZUwz8=
 github.com/donnigundala/dg-database v1.5.1/go.mod h1:CuglC0/JoqPCsm0pVuae7spYEv7H4fBEIg4KJDXenPI=
+github.com/donnigundala/dg-database v1.5.2 h1:StwCDGkKvMOQ/j5SzUvNxB4giKs7MofLfS3MVlnap2c=
+github.com/donnigundala/dg-database v1.5.2/go.mod h1:DUKeQIYZ1yYylBIS05oDCn/RGf+YPsq3FAIrs1uLQBs=
 github.com/donnigundala/dg-filesystem v1.0.3 h1:NJRtyxJjaB0IxBDBknx0mjXlr6iAdN6/QREUt8ai3l4=
 github.com/donnigundala/dg-filesystem v1.0.3/go.mod h1:IyfN7aB6Bmvb51zv1cJ1MpeDHZmPFgNUw8imD5+icsc=
 github.com/donnigundala/dg-firebase v1.1.1 h1:m1CoPs7gT7GnWLYF4afwoJ0gCdqbYbva0hw5CZKCdh8=
