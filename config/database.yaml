@@ -1,7 +1,7 @@
 # ========================================
 # Basic Database Configuration
 # ========================================
-database:
+db:
   driver: postgres          # Database driver: postgres, mysql, sqlite
   host: localhost
   port: 5432
@@ -13,11 +13,11 @@ database:
   # Connection pool settings
   max_open_conns: 100
   max_idle_conns: 10
-  conn_max_lifetime: 3600  # seconds
+  conn_max_lifetime: 3600s  # seconds
   
   # Logging
   log_level: warn          # silent, error, warn, info
-  slow_threshold: 200      # milliseconds
+  slow_threshold: 200ms      # milliseconds
 
 
 # ========================================
