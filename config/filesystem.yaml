@@ -1,0 +1,24 @@
+filesystem:
+  # Default disk to use
+  default: "local"
+
+  disks:
+    # Public local disk
+    local:
+      driver: "local"
+      root: "./storage/app/public"
+      url: "http://localhost:8080/storage"
+
+    # Private local disk
+    private:
+      driver: "local"
+      root: "./storage/app/private"
+      url: "" # No public URL
+
+    # AWS S3 Bucket
+    s3:
+      driver: "s3"
+      region: "us-east-1"
+      bucket: "my-app-bucket"
+      url: "https://my-app-bucket.s3.amazonaws.com"
+      use_path_style: false

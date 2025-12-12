@@ -19,6 +19,9 @@ import (
 	"github.com/donnigundala/dg-core/http/health"
 	"github.com/donnigundala/dg-core/logging"
 	"github.com/donnigundala/dg-core/validation"
+	filesystem "github.com/donnigundala/dg-filesystem"
+
+	// "github.com/donnigundala/dg-filesystem/drivers/s3" // Uncomment to enable S3 driver
 	queue "github.com/donnigundala/dg-queue"
 	scheduler "github.com/donnigundala/dg-scheduler"
 	"github.com/gin-gonic/gin"
@@ -197,7 +200,8 @@ func (a *Application) registerProviders() error {
 		providers.NewQueueServiceProvider(queueConfig),
 		providers.NewSchedulerServiceProvider(), // Queue must be registered before Scheduler
 		providers.NewDatabaseServiceProvider(),
-		providers.FirebaseProvider(), // Firebase integration
+		&filesystem.FilesystemServiceProvider{}, // Filesystem
+		providers.FirebaseProvider(),            // Firebase integration
 
 		// Application layer (order matters: Repositories → Services → Controllers)
 		providers.NewRepositoryServiceProvider(),
