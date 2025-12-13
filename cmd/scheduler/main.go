@@ -6,8 +6,8 @@ import (
 )
 
 func main() {
-	// Create a new scheduler application instance.
-	app := bootstrap.NewSchedulerApplication()
+	// Create a new application instance in scheduler mode.
+	app := bootstrap.NewApplication(bootstrap.ModeScheduler)
 
 	// Boot the application.
 	if err := app.Boot(); err != nil {

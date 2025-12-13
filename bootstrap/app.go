@@ -26,6 +26,16 @@ import (
 	scheduler "github.com/donnigundala/dg-scheduler"
 )
 
+// AppMode defines the application execution mode.
+type AppMode string
+
+const (
+	// ModeWeb runs the application as an HTTP server.
+	ModeWeb AppMode = "web"
+	// ModeScheduler runs the application as a background job scheduler.
+	ModeScheduler AppMode = "scheduler"
+)
+
 // AppConfig represents the application configuration.
 type AppConfig struct {
 	Name  string `mapstructure:"name" validate:"required,min=3"`
@@ -39,28 +49,17 @@ type Application struct {
 	logger     *logging.Logger
 	config     AppConfig
 	server     *coreHTTP.HTTPServer
-	mode       string // "web" or "scheduler"
+	mode       AppMode
 }
 
-// NewApplication creates a new application instance (Web mode).
-func NewApplication() *Application {
+// NewApplication creates a new application instance with the specified mode.
+func NewApplication(mode AppMode) *Application {
 	basePath, _ := os.Getwd()
 	app := foundation.New(basePath)
 
 	return &Application{
 		foundation: app,
-		mode:       "web",
-	}
-}
-
-// NewSchedulerApplication creates a new application instance (Scheduler mode).
-func NewSchedulerApplication() *Application {
-	basePath, _ := os.Getwd()
-	app := foundation.New(basePath)
-
-	return &Application{
-		foundation: app,
-		mode:       "scheduler",
+		mode:       mode,
 	}
 }
 
@@ -133,7 +132,7 @@ func (a *Application) Start() error {
 		return err
 	}
 
-	if a.mode == "web" {
+	if a.mode == ModeWeb {
 		go func() {
 			if err := a.server.Start(); err != nil {
 				a.logger.Error("HTTP server error", "error", err)
