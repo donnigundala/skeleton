@@ -66,8 +66,8 @@ func NewSchedulerApplication() *Application {
 
 // Boot initializes and bootstraps the application.
 func (a *Application) Boot() error {
-	// Initialize Logger
-	a.logger = a.setupLogger()
+	// Initialize basic logger (before config is loaded)
+	a.logger = a.setupLogger(false)
 	a.foundation.Instance("logger", a.logger)
 	logging.SetDefault(a.logger)
 
@@ -76,9 +76,9 @@ func (a *Application) Boot() error {
 		return err
 	}
 
-	// Update logger if debug mode is enabled
+	// Reconfigure logger with debug settings if enabled
 	if a.config.Debug {
-		a.logger = a.setupLogger()
+		a.logger = a.setupLogger(true)
 		a.foundation.Instance("logger", a.logger)
 		logging.SetDefault(a.logger)
 	}
@@ -149,10 +149,10 @@ func (a *Application) Start() error {
 	return nil
 }
 
-func (a *Application) setupLogger() *logging.Logger {
+func (a *Application) setupLogger(debug bool) *logging.Logger {
 	level := slog.LevelInfo
 	addSource := false
-	if a.config.Debug {
+	if debug {
 		level = slog.LevelDebug
 		addSource = true
 	}
