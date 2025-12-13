@@ -102,10 +102,8 @@ func (a *Application) Boot() error {
 	a.logger.Info("Service providers booted successfully")
 
 	// Setup HTTP Server (only in web mode)
-	if a.mode == "web" {
-		a.logger.Info("Setting up HTTP server...")
+	if a.mode == ModeWeb {
 		a.server = a.setupHTTPServer()
-		a.logger.Info("HTTP server configured")
 	}
 
 	// Register Shutdown Hooks
@@ -126,20 +124,21 @@ func (a *Application) Start() error {
 		return err
 	}
 
-	// Register scheduled jobs
-	if err := a.registerScheduledJobs(); err != nil {
-		a.logger.Error("Failed to register scheduled jobs", "error", err)
-		return err
-	}
-
-	if a.mode == ModeWeb {
+	switch a.mode {
+	case ModeWeb:
+		// Web mode: Start HTTP server
 		go func() {
 			if err := a.server.Start(); err != nil {
 				a.logger.Error("HTTP server error", "error", err)
 			}
 		}()
-	} else {
-		a.logger.Info("Application running in foreground (press Ctrl+C to stop)...")
+	case ModeScheduler:
+		// Scheduler mode: Register and run scheduled jobs
+		if err := a.registerScheduledJobs(); err != nil {
+			a.logger.Error("Failed to register scheduled jobs", "error", err)
+			return err
+		}
+		a.logger.Info("Scheduler running in foreground (press Ctrl+C to stop)...")
 	}
 
 	a.foundation.WaitForShutdown()
@@ -222,6 +221,7 @@ func (a *Application) registerProviders() error {
 }
 
 func (a *Application) setupHTTPServer() *coreHTTP.HTTPServer {
+	a.logger.Info("Setting up HTTP server...")
 	router := appHTTP.NewKernel(a.foundation)
 
 	// Create Kernel with Gin Engine

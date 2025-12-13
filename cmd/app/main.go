@@ -7,7 +7,7 @@ import (
 
 func main() {
 	// Create a new application instance.
-	app := bootstrap.NewApplication()
+	app := bootstrap.NewApplication(bootstrap.ModeWeb)
 
 	// Boot the application.
 	if err := app.Boot(); err != nil {
