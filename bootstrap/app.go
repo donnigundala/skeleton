@@ -200,14 +200,9 @@ func (a *Application) registerProviders() error {
 		filesystem.NewFilesystemServiceProvider(), // Filesystem
 		firebase.NewFirebaseServiceProvider(),     // Firebase integration
 
-		// Application layer (order matters: Repositories → Services → Controllers)
+		// Application layer (order matters: Repositories → Services)
 		providers.NewRepositoryServiceProvider(),
 		providers.NewServiceLayerProvider(),
-	}
-
-	// Only register controllers in web mode
-	if a.mode == "web" {
-		providersToRegister = append(providersToRegister, providers.NewControllerServiceProvider())
 	}
 
 	for _, provider := range providersToRegister {

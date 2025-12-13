@@ -6,11 +6,17 @@ import (
 	"github.com/donnigundala/dg-core/foundation"
 	coreHTTP "github.com/donnigundala/dg-core/http"
 	"github.com/donnigundala/dg-core/http/health"
+	"github.com/donnigundala/dg-core/validation"
 	"github.com/gin-gonic/gin"
 )
 
 // NewKernel configures the HTTP kernel (router, middleware, routes).
 func NewKernel(app *foundation.Application) *gin.Engine {
+	// Register validator (needed by controllers)
+	app.Singleton("validator", func() (interface{}, error) {
+		return validation.NewValidator(), nil
+	})
+
 	// Create Gin Engine using dg-core factory
 	router := coreHTTP.NewRouter()
 

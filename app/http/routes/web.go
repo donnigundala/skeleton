@@ -9,6 +9,9 @@ import (
 
 // Register registers the web routes.
 func Register(app foundation.Application, router *gin.Engine) {
+	// Initialize all controllers once
+	ctrl := controllers.Initialize(app)
+
 	// Welcome route
 	router.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -17,15 +20,6 @@ func Register(app foundation.Application, router *gin.Engine) {
 			"info":    "DG Framework Skeleton Application",
 		})
 	})
-
-	// Helper to resolve userController lazily on each request
-	getUserController := func() *controllers.UserController {
-		userControllerInstance, err := app.Make("userController")
-		if err != nil {
-			panic("failed to resolve userController: " + err.Error())
-		}
-		return userControllerInstance.(*controllers.UserController)
-	}
 
 	// API group
 	api := router.Group("/api/v1")
@@ -37,21 +31,11 @@ func Register(app foundation.Application, router *gin.Engine) {
 			})
 		})
 
-		// User routes
-		api.POST("/users", func(c *gin.Context) {
-			getUserController().Create(c)
-		})
-		api.GET("/users", func(c *gin.Context) {
-			getUserController().List(c)
-		})
-		api.GET("/users/:id", func(c *gin.Context) {
-			getUserController().Get(c)
-		})
-		api.PUT("/users/:id", func(c *gin.Context) {
-			getUserController().Update(c)
-		})
-		api.DELETE("/users/:id", func(c *gin.Context) {
-			getUserController().Delete(c)
-		})
+		// User routes - clean and direct
+		api.POST("/users", ctrl.User.Create)
+		api.GET("/users", ctrl.User.List)
+		api.GET("/users/:id", ctrl.User.Get)
+		api.PUT("/users/:id", ctrl.User.Update)
+		api.DELETE("/users/:id", ctrl.User.Delete)
 	}
 }
